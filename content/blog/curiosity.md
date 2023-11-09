@@ -22,9 +22,9 @@ What's really happening? We imported the [Application](https://github.com/hotwir
 class and called the method ``start()`` on the class itself and that's it. We have not yet interacted with it whatsoever. From this moment, we are ready to register the controllers manually like ``Stimulus.register("hello", HelloController)``, but we are not going to do that yet. Let's have a look first at the source of ``start()``:
 
 ```
-export class Application implements ErrorHandler { // (1)
+export class Application implements ErrorHandler { //
   ...
-  static start(element?: Element, schema?: Schema): Application {
+  static start(element?: Element, schema?: Schema): Application { // (1)
     const application = new this(element, schema) // (2)
     application.start() // (3)
     return application
@@ -34,9 +34,9 @@ export class Application implements ErrorHandler { // (1)
 
 **(1)** The keyword ``static`` just before a method, declares it as a Class method, not an instance method, 
 therefore we can call ``Application.start()``. This method takes two optional arguments (element and schema), 
-element will be the <html> document itself and schema is where the keywords are defined, like for example 
+**element** will be the <html> document itself and **schema** is where the keywords are defined, like for example 
 ``data-controller`` or ``data-action``. In this case, we did not pass any parameters, so they will be 
-undefined in this case and will take the default values, but we'll get the in a minute. 
+undefined in this case and will take the default values, but we will get there in a minute. 
 **(2)** The first line will trigger  the constructor of Application class, so then we'll have an instance 
 of it stored in ``application``. 
 
@@ -55,7 +55,7 @@ Let's have a look then at the constructor that was just used to create our Appli
 
 
 
-Interesting! Since the values for element and schema were undefined, they took the default values which are defined in 
+Interesting! Since the values for element and schema were undefined(remember we did ``Application.start()``), they took the default values which are defined in 
 the constructor. Not too surprising when you think about it, we'll use the whole HTML document to be root element 
 of our application instance and we'll use the default schema. I have a clue of what the schema might be but 
 let's have a quick look to get a general idea of what is happening. The default schema looks like this:
