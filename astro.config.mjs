@@ -27,7 +27,6 @@ let BASE_URL = LOCALHOST_URL;
 // When you're building your site in local or in CI, you could just set your URL manually
 if (isBuild) {
   BASE_URL = "https://divagueame.github.io";
-  BASE = '/sexy-stimulus'
 }
 
 export default defineConfig({
