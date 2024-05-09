@@ -1,6 +1,6 @@
 ---
 external: false
-draft: true
+draft: false
 title: The Stimulus Box
 description: Let's open it step by step.
 date: 2022-11-05
