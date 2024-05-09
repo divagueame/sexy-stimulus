@@ -1,6 +1,6 @@
 ---
 external: false
-draft: false
+draft: true
 title: Designing data intensive applications
 description: .
 date: 2023-11-11
