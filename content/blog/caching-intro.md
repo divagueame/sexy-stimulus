@@ -111,7 +111,7 @@ Let's say in your template, you have a template that takes a while to compute, l
 <% 10.times do %>
     <%  sleep 1 %>
     <h1>My beautiful post</h1>
-<% end %>
+<% end %
 ```
 
 We can inspect the logs and assert that this is taking around 10 seconds. We could improve that by caching.
@@ -182,7 +182,51 @@ We can confirm this by reading the docs:
 
 > [rails/actionview/lib/action_view/helpers/cache_helper.rb](https://github.com/rails/rails/blob/67c6ef2e5957152f00050224281ed4eabaaebd92/actionview/lib/action_view/helpers/cache_helper.rb#L49)
 > 
-> Template digest
 > The template digest that’s added to the cache key is computed by taking an MD5 of the contents of the entire template file. This ensures that your caches will automatically expire when you change the template file.
+> Template digest
 
 
+Let's try not to blindly believe this, and let's see it in action.
+
+Let's open a database session:
+```bash
+bin/rails db
+
+sqlite> PRAGMA database_list; # Let's see what databases we're connected to
+0|main|/home/marce/web/rails/caching/storage/development.sqlite3
+
+sqlite> ATTACH DATABASE 'storage/development_cache.sqlite3' AS cache; # Let's connect to the cache database too.
+sqlite> .tables
+ar_internal_metadata        cache.solid_cache_entries # Here it's our solid_cache table
+cache.ar_internal_metadata  posts
+cache.schema_migrations     schema_migrations
+
+sqlite> SELECT * FROM solid_cache_entries; # Let's see what we have actually cached:
+90|development:views/posts/index:93989b4fc3737f30c7255b32063fa97c/localhost:3000/posts||2024-11-17 09:37:37.905|3017953458958006028|270
+```
+
+We can see the row was added to our _solid_cache_entries_ table. However, we can't read the actual HTML string '    <h1>Dog</h1>' that was cached, because it's stored as a binary type. This is its schema:
+```ruby
+ActiveRecord::Schema[8.0].define(version: 1) do
+  create_table "solid_cache_entries", force: :cascade do |t|
+    t.binary "key", limit: 1024, null: false
+    t.binary "value", limit: 536870912, null: false
+    t.datetime "created_at", null: false
+    t.integer "key_hash", limit: 8, null: false
+    t.integer "byte_size", limit: 4, null: false
+    t.index ["byte_size"], name: "index_solid_cache_entries_on_byte_size"
+    t.index ["key_hash", "byte_size"], name: "index_solid_cache_entries_on_key_hash_and_byte_size"
+    t.index ["key_hash"], name: "index_solid_cache_entries_on_key_hash", unique: true
+  end
+end
+
+```
+
+To verify the value stored in our cache table, we can do from the rails console, and use `Rails.cache.fetch(our key)`. The key we can take it from our previous query on the SQlite (without `development:`), so it will be `views/posts/index:93989b4fc3737f30c7255b32063fa97c/localhost:3000/posts`:
+```
+rails c
+Rails.cache.fetch('views/posts/index:93989b4fc3737f30c7255b32063fa97c/localhost:3000/posts')
+  SolidCache::Entry Load (0.1ms)  SELECT "solid_cache_entries"."key", "solid_cache_entries"."value" FROM "solid_cache_entries" WHERE "solid_cache_entries"."key_hash" IN (3017953458958006028) /*application='Caching'*/
+=> "    <h1>Dog meow</h1>\n"
+```
+Sweet! Now can see how the data is properly stored.
