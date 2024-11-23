@@ -119,4 +119,4 @@ export class Router implements ScopeObserverDelegate {
 
 Similarly to the **dispatcher**, the **router** also can read the application. Furthermore, it also creates an instance of `ScopeObserver`, we'll dive into it later, but for now, let's keep exploring here. We can see there are **scopes** and **modules** but that's not very enlightening since we don't know yet what those terms really refer to, as they could have different meanings. I know Stimulus is using MutationObserver to track changes in the DOM and then dispatch the corresponding events when it's due, but for now, let's try to get the whole picture together.
 
-![A starry night sky.](../../src/assets/1.png)
+![A starry night sky.](images/1.png)
